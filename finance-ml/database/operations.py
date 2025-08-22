@@ -469,3 +469,6 @@ if __name__ == "__main__":
     # Check processing status
     status = db_ops.get_processing_status("TCS")
     print(f"Processing status: {status}")
+
+    # For backward compatibility
+DatabaseOperations = EnhancedDatabaseOperations
