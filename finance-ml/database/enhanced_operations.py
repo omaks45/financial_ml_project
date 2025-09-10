@@ -15,7 +15,7 @@ from config.database import DatabaseConfig
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-class EnhancedMLDatabaseOperations:
+class EnhancedDatabaseOperations:
     """
     Enhanced database operations specifically designed for ML pipeline
     Extends your existing functionality with ML-focused methods
@@ -92,7 +92,7 @@ class EnhancedMLDatabaseOperations:
     def save_financial_data(self, company_id: str, financial_metrics: Dict[str, Any]) -> bool:
         """
         Save comprehensive financial data from API
-        Task 3: Store financial data for ML analysis
+        Store financial data for ML analysis
         """
         try:
             with self.get_connection() as conn:
@@ -190,7 +190,7 @@ class EnhancedMLDatabaseOperations:
                     scores: Dict[str, float], status: str = 'completed') -> bool:
         """
         Save ML analysis results
-        Task 4: Store ML analysis output with pros/cons and scores
+        Store ML analysis output with pros/cons and scores
         """
         try:
             with self.get_connection() as conn:
@@ -375,7 +375,7 @@ class EnhancedMLDatabaseOperations:
     def get_complete_company_analysis(self, company_id: str) -> Optional[Dict[str, Any]]:
         """
         Get complete analysis combining company info, financial data, and ML results
-        Task 4: Comprehensive data retrieval for analysis
+        Comprehensive data retrieval for analysis
         """
         try:
             with self.get_connection() as conn:
@@ -575,9 +575,9 @@ class EnhancedMLDatabaseOperations:
             return {}
 
 # Factory function for easy import
-def create_enhanced_ml_database() -> EnhancedMLDatabaseOperations:
+def create_enhanced_ml_database() -> EnhancedDatabaseOperations:
     """Factory function to create enhanced ML database operations instance"""
-    return EnhancedMLDatabaseOperations()
+    return EnhancedDatabaseOperations()
 
 # Example usage and testing
 if __name__ == "__main__":

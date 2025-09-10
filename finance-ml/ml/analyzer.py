@@ -1,734 +1,596 @@
 """
-Financial Metrics Calculation Functions
+Fixed Financial Analysis Integration Framework
+Adds the missing analyze_company method
 
-This module handles:
-- Financial ratios calculation
-- Growth metrics computation
-- Composite financial health scores
-- ML-ready feature engineering
+This module provides:
+- Unified interface for financial analysis pipeline
+- Error handling and data validation
+- Comprehensive analysis workflow
+- Results aggregation and formatting
 """
 
 import logging
-import math
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, Optional, List
+from datetime import datetime
+import random
+
+# Import your existing modules
+from data.financial_metrics import FinancialMetricsCalculator
 
 logger = logging.getLogger(__name__)
 
-class FinancialMetricsCalculator:
+class FinancialAnalysisPipeline:
     """
-    Implementation: Financial Metrics Calculation
+    Integrated Financial Analysis Pipeline
     
-    Calculates comprehensive financial metrics and ratios from cleaned financial data.
-    Prepares data for ML analysis with proper feature engineering.
+    Combines metric calculation and ML analysis into a unified workflow
     """
     
     def __init__(self):
-        """Initialize financial metrics calculator"""
-        self.calculation_stats = {
-            'total_calculations': 0,
-            'calculation_errors': 0,
-            'zero_division_errors': 0
+        """Initialize the integrated pipeline"""
+        self.metrics_calculator = FinancialMetricsCalculator()
+        
+        self.pipeline_stats = {
+            'total_analyses': 0,
+            'successful_analyses': 0,
+            'failed_analyses': 0,
+            'start_time': datetime.now()
         }
         
-        # Define metric categories for organized calculation
-        self.metric_categories = {
-            'profitability': [
-                'return_on_equity', 'return_on_assets', 'profit_margin',
-                'gross_margin', 'operating_margin', 'net_margin'
-            ],
-            'liquidity': [
-                'current_ratio', 'quick_ratio', 'cash_ratio', 'operating_cash_flow_ratio'
-            ],
-            'leverage': [
-                'debt_to_equity', 'debt_ratio', 'equity_ratio', 'times_interest_earned'
-            ],
-            'efficiency': [
-                'asset_turnover', 'inventory_turnover', 'receivables_turnover',
-                'working_capital_turnover'
-            ],
-            'growth': [
-                'revenue_growth', 'profit_growth', 'asset_growth', 'equity_growth'
-            ],
-            'market': [
-                'price_to_earnings', 'price_to_book', 'dividend_yield', 'earnings_per_share'
-            ]
-        }
+        # Pros and cons templates for ML analysis
+        self.pros_templates = [
+            "Company {} has strong ROE of {:.1f}%",
+            "Company {} shows excellent profit growth of {:.1f}%",
+            "Company {} maintains healthy current ratio of {:.2f}",
+            "Company {} has low debt-to-equity ratio of {:.2f}",
+            "Company {} demonstrates strong financial health score of {:.1f}%",
+            "Company {} has delivered good revenue growth",
+            "Company {} shows strong profitability metrics",
+            "Company {} maintains good liquidity position",
+            "Company {} has conservative debt levels",
+            "Company {} shows consistent financial performance"
+        ]
         
-        logger.info("FinancialMetricsCalculator initialized for Day 3 Task 2")
+        self.cons_templates = [
+            "Company {} has low ROE of {:.1f}%",
+            "Company {} shows poor sales growth of {:.1f}%",
+            "Company {} has high debt-to-equity ratio of {:.2f}",
+            "Company {} has weak current ratio of {:.2f}",
+            "Company {} shows below-average financial health score of {:.1f}%",
+            "Company {} faces profitability challenges",
+            "Company {} has liquidity concerns",
+            "Company {} carries high debt burden",
+            "Company {} shows inconsistent performance",
+            "Company {} needs operational improvements"
+        ]
+        
+        logger.info("FinancialAnalysisPipeline initialized")
     
-    def calculate_all_metrics(self, cleaned_data: Dict[str, Any]) -> Dict[str, float]:
+    def analyze_company(self, company_id: str, calculated_metrics: Dict[str, float]) -> Dict[str, Any]:
         """
-        Main calculation function - computes all financial metrics
+        FIXED: Added the missing method that the debug script expects
+        
+        Perform ML analysis on calculated financial metrics
         
         Args:
-            cleaned_data: Cleaned financial data from DataProcessor
+            company_id: Company identifier
+            calculated_metrics: Pre-calculated financial metrics
             
         Returns:
-            Dictionary containing all calculated financial metrics
+            ML analysis results with pros, cons, and insights
         """
-        if not cleaned_data or 'error' in cleaned_data:
-            logger.warning("Invalid or error-containing data provided for metrics calculation")
-            return {}
-        
         try:
-            logger.info("Starting comprehensive financial metrics calculation...")
+            logger.info(f"Performing ML analysis for {company_id}")
             
-            # Extract data sections
-            financial_metrics = cleaned_data.get('financial_metrics', {})
-            balance_sheet = cleaned_data.get('balance_sheet', {})
-            profit_loss = cleaned_data.get('profit_loss', {})
-            cash_flow = cleaned_data.get('cash_flow', {})
-            ratios = cleaned_data.get('ratios', {})
-            growth_metrics = cleaned_data.get('growth_metrics', {})
+            if not calculated_metrics or len(calculated_metrics) == 0:
+                return self._create_empty_analysis(company_id, "No metrics provided")
             
-            # Initialize results dictionary
-            calculated_metrics = {}
+            # Generate pros and cons based on metrics
+            pros_analysis = self._generate_pros(company_id, calculated_metrics)
+            cons_analysis = self._generate_cons(company_id, calculated_metrics)
             
-            # 1. Extract primary metrics from API data
-            primary_metrics = self._extract_primary_metrics(
-                financial_metrics, ratios, growth_metrics
-            )
-            calculated_metrics.update(primary_metrics)
+            # Calculate overall scores
+            overall_score = self._calculate_overall_score(calculated_metrics)
             
-            # 2. Calculate profitability ratios
-            profitability_ratios = self._calculate_profitability_ratios(
-                profit_loss, balance_sheet, financial_metrics
-            )
-            calculated_metrics.update(profitability_ratios)
+            # Create ML analysis summary
+            ml_analysis_summary = self._create_ml_summary(calculated_metrics)
             
-            # 3. Calculate liquidity ratios  
-            liquidity_ratios = self._calculate_liquidity_ratios(
-                balance_sheet, cash_flow, financial_metrics
-            )
-            calculated_metrics.update(liquidity_ratios)
+            # Generate insights summary
+            insights_summary = self._generate_insights_summary(company_id, calculated_metrics, pros_analysis, cons_analysis)
             
-            # 4. Calculate leverage ratios
-            leverage_ratios = self._calculate_leverage_ratios(
-                balance_sheet, profit_loss, financial_metrics
-            )
-            calculated_metrics.update(leverage_ratios)
-            
-            # 5. Calculate efficiency ratios
-            efficiency_ratios = self._calculate_efficiency_ratios(
-                balance_sheet, profit_loss, financial_metrics
-            )
-            calculated_metrics.update(efficiency_ratios)
-            
-            # 6. Calculate growth metrics
-            growth_calculations = self._calculate_growth_metrics(
-                growth_metrics, financial_metrics
-            )
-            calculated_metrics.update(growth_calculations)
-            
-            # 7. Calculate market ratios (if data available)
-            market_ratios = self._calculate_market_ratios(
-                financial_metrics, ratios
-            )
-            calculated_metrics.update(market_ratios)
-            
-            # 8. Calculate composite scores
-            composite_scores = self._calculate_composite_scores(calculated_metrics)
-            calculated_metrics.update(composite_scores)
-            
-            # 9. Calculate ML features
-            ml_features = self._calculate_ml_features(calculated_metrics)
-            calculated_metrics.update(ml_features)
+            analysis_results = {
+                'company_id': company_id,
+                'analysis_timestamp': datetime.now().isoformat(),
+                'pros': pros_analysis,
+                'cons': cons_analysis,
+                'overall_score': overall_score,
+                'ml_analysis': ml_analysis_summary,
+                'insights_summary': insights_summary,
+                'title': f"{company_id}: Financial Analysis Report",
+                'analysis_confidence': overall_score.get('confidence_level', 'medium')
+            }
             
             # Update statistics
-            self.calculation_stats['total_calculations'] += 1
+            self.pipeline_stats['total_analyses'] += 1
+            self.pipeline_stats['successful_analyses'] += 1
             
-            logger.info(f"Calculated {len(calculated_metrics)} financial metrics successfully")
-            return calculated_metrics
+            logger.info(f"ML analysis completed for {company_id}: {len(pros_analysis['selected_pros'])} pros, {len(cons_analysis['selected_cons'])} cons")
             
-        except Exception as e:
-            error_msg = f"Error calculating financial metrics: {str(e)}"
-            logger.error(error_msg)
-            self.calculation_stats['calculation_errors'] += 1
-            return {'calculation_error': error_msg}
-    
-    def _extract_primary_metrics(self, financial_metrics: Dict, ratios: Dict, 
-                                growth_metrics: Dict) -> Dict[str, float]:
-        """Extract primary metrics directly from API data"""
-        primary = {}
-        
-        # Primary financial figures
-        metric_mappings = {
-            'revenue': ['revenue', 'total_revenue', 'net_sales'],
-            'net_income': ['net_income', 'profit_after_tax', 'net_profit'],
-            'total_assets': ['total_assets', 'assets'],
-            'total_equity': ['total_equity', 'shareholders_equity', 'equity'],
-            'total_debt': ['total_debt', 'debt', 'total_liabilities'],
-            'current_assets': ['current_assets'],
-            'current_liabilities': ['current_liabilities'],
-            'cash': ['cash', 'cash_and_equivalents', 'cash_equivalents']
-        }
-        
-        # Extract from financial_metrics first, then ratios
-        for metric, possible_keys in metric_mappings.items():
-            primary[metric] = self._get_value_from_sources(
-                [financial_metrics, ratios], possible_keys
-            )
-        
-        # Extract ratios directly
-        ratio_mappings = {
-            'roe': ['roe', 'return_on_equity'],
-            'roa': ['roa', 'return_on_assets'], 
-            'current_ratio': ['current_ratio'],
-            'debt_to_equity': ['debt_to_equity', 'debt_equity_ratio'],
-            'profit_margin': ['profit_margin', 'net_margin']
-        }
-        
-        for ratio, possible_keys in ratio_mappings.items():
-            primary[ratio] = self._get_value_from_sources(
-                [ratios, financial_metrics], possible_keys
-            )
-        
-        # Extract growth metrics
-        growth_mappings = {
-            'sales_growth': ['sales_growth', 'revenue_growth'],
-            'profit_growth': ['profit_growth', 'net_income_growth'],
-            'stock_cagr': ['stock_cagr', 'stock_return', 'share_price_cagr']
-        }
-        
-        for growth, possible_keys in growth_mappings.items():
-            primary[growth] = self._get_value_from_sources(
-                [growth_metrics, financial_metrics], possible_keys
-            )
-        
-        return primary
-    
-    def _calculate_profitability_ratios(self, profit_loss: Dict, balance_sheet: Dict,
-                                      financial_metrics: Dict) -> Dict[str, float]:
-        """Calculate profitability ratios"""
-        ratios = {}
-        
-        try:
-            # Get base values
-            revenue = self._get_value_from_sources([profit_loss, financial_metrics], 
-                                                 ['revenue', 'net_sales', 'total_revenue'])
-            net_income = self._get_value_from_sources([profit_loss, financial_metrics],
-                                                    ['net_income', 'profit_after_tax'])
-            gross_profit = self._get_value_from_sources([profit_loss], 
-                                                       ['gross_profit', 'gross_income'])
-            operating_income = self._get_value_from_sources([profit_loss],
-                                                          ['operating_income', 'ebit'])
-            total_assets = self._get_value_from_sources([balance_sheet, financial_metrics],
-                                                       ['total_assets', 'assets'])
-            shareholders_equity = self._get_value_from_sources([balance_sheet, financial_metrics],
-                                                             ['shareholders_equity', 'total_equity'])
-            
-            # Calculate ratios with zero-division protection
-            ratios['calculated_profit_margin'] = self._safe_divide(net_income, revenue) * 100
-            ratios['calculated_gross_margin'] = self._safe_divide(gross_profit, revenue) * 100
-            ratios['calculated_operating_margin'] = self._safe_divide(operating_income, revenue) * 100
-            ratios['calculated_roa'] = self._safe_divide(net_income, total_assets) * 100
-            ratios['calculated_roe'] = self._safe_divide(net_income, shareholders_equity) * 100
-            
-            # Asset utilization ratios
-            ratios['revenue_per_asset'] = self._safe_divide(revenue, total_assets)
-            ratios['income_per_equity'] = self._safe_divide(net_income, shareholders_equity)
+            return analysis_results
             
         except Exception as e:
-            logger.warning(f"Error calculating profitability ratios: {e}")
-            ratios['profitability_error'] = str(e)
-        
-        return ratios
+            logger.error(f"Error in ML analysis for {company_id}: {e}")
+            self.pipeline_stats['total_analyses'] += 1
+            self.pipeline_stats['failed_analyses'] += 1
+            return self._create_empty_analysis(company_id, str(e))
     
-    def _calculate_liquidity_ratios(self, balance_sheet: Dict, cash_flow: Dict,
-                                  financial_metrics: Dict) -> Dict[str, float]:
-        """Calculate liquidity ratios"""
-        ratios = {}
+    def _generate_pros(self, company_id: str, metrics: Dict[str, float]) -> Dict[str, Any]:
+        """Generate pros based on financial metrics"""
+        pros = []
         
         try:
-            # Get base values
-            current_assets = self._get_value_from_sources([balance_sheet, financial_metrics],
-                                                         ['current_assets'])
-            current_liabilities = self._get_value_from_sources([balance_sheet, financial_metrics],
-                                                             ['current_liabilities'])
-            cash = self._get_value_from_sources([balance_sheet, financial_metrics],
-                                               ['cash', 'cash_and_equivalents'])
-            inventory = self._get_value_from_sources([balance_sheet],
-                                                    ['inventory', 'inventories'])
-            operating_cash_flow = self._get_value_from_sources([cash_flow],
-                                                             ['operating_cash_flow', 'cash_from_operations'])
-            
-            # Calculate liquidity ratios
-            ratios['calculated_current_ratio'] = self._safe_divide(current_assets, current_liabilities)
-            ratios['calculated_quick_ratio'] = self._safe_divide(
-                (current_assets - inventory), current_liabilities
-            )
-            ratios['calculated_cash_ratio'] = self._safe_divide(cash, current_liabilities)
-            ratios['operating_cash_flow_ratio'] = self._safe_divide(
-                operating_cash_flow, current_liabilities
-            )
-            
-            # Working capital metrics
-            working_capital = current_assets - current_liabilities
-            ratios['working_capital'] = working_capital
-            ratios['working_capital_ratio'] = self._safe_divide(working_capital, current_assets)
-            
-        except Exception as e:
-            logger.warning(f"Error calculating liquidity ratios: {e}")
-            ratios['liquidity_error'] = str(e)
-        
-        return ratios
-    
-    def _calculate_leverage_ratios(self, balance_sheet: Dict, profit_loss: Dict,
-                                 financial_metrics: Dict) -> Dict[str, float]:
-        """Calculate leverage/debt ratios"""
-        ratios = {}
-        
-        try:
-            # Get base values
-            total_debt = self._get_value_from_sources([balance_sheet, financial_metrics],
-                                                     ['total_debt', 'debt'])
-            total_equity = self._get_value_from_sources([balance_sheet, financial_metrics],
-                                                       ['total_equity', 'shareholders_equity'])
-            total_assets = self._get_value_from_sources([balance_sheet, financial_metrics],
-                                                       ['total_assets'])
-            interest_expense = self._get_value_from_sources([profit_loss],
-                                                          ['interest_expense', 'finance_cost'])
-            ebit = self._get_value_from_sources([profit_loss],
-                                              ['ebit', 'operating_income'])
-            
-            # Calculate leverage ratios
-            ratios['calculated_debt_to_equity'] = self._safe_divide(total_debt, total_equity)
-            ratios['calculated_debt_ratio'] = self._safe_divide(total_debt, total_assets)
-            ratios['calculated_equity_ratio'] = self._safe_divide(total_equity, total_assets)
-            ratios['times_interest_earned'] = self._safe_divide(ebit, interest_expense)
-            
-            # Additional leverage metrics
-            ratios['debt_to_assets'] = self._safe_divide(total_debt, total_assets) * 100
-            ratios['equity_multiplier'] = self._safe_divide(total_assets, total_equity)
-            
-        except Exception as e:
-            logger.warning(f"Error calculating leverage ratios: {e}")
-            ratios['leverage_error'] = str(e)
-        
-        return ratios
-    
-    def _calculate_efficiency_ratios(self, balance_sheet: Dict, profit_loss: Dict,
-                                   financial_metrics: Dict) -> Dict[str, float]:
-        """Calculate efficiency/activity ratios"""
-        ratios = {}
-        
-        try:
-            # Get base values
-            revenue = self._get_value_from_sources([profit_loss, financial_metrics],
-                                                 ['revenue', 'net_sales'])
-            total_assets = self._get_value_from_sources([balance_sheet, financial_metrics],
-                                                       ['total_assets'])
-            inventory = self._get_value_from_sources([balance_sheet],
-                                                    ['inventory'])
-            accounts_receivable = self._get_value_from_sources([balance_sheet],
-                                                             ['accounts_receivable', 'receivables'])
-            cost_of_goods_sold = self._get_value_from_sources([profit_loss],
-                                                            ['cost_of_goods_sold', 'cogs'])
-            
-            # Calculate efficiency ratios
-            ratios['asset_turnover'] = self._safe_divide(revenue, total_assets)
-            ratios['inventory_turnover'] = self._safe_divide(cost_of_goods_sold, inventory)
-            ratios['receivables_turnover'] = self._safe_divide(revenue, accounts_receivable)
-            
-            # Days calculations
-            if ratios['inventory_turnover'] > 0:
-                ratios['days_in_inventory'] = 365 / ratios['inventory_turnover']
-            if ratios['receivables_turnover'] > 0:
-                ratios['days_sales_outstanding'] = 365 / ratios['receivables_turnover']
-            
-            # Revenue efficiency
-            ratios['revenue_per_employee'] = self._get_value_from_sources(
-                [financial_metrics], ['revenue_per_employee']
-            )
-            
-        except Exception as e:
-            logger.warning(f"Error calculating efficiency ratios: {e}")
-            ratios['efficiency_error'] = str(e)
-        
-        return ratios
-    
-    def _calculate_growth_metrics(self, growth_metrics: Dict, 
-                                financial_metrics: Dict) -> Dict[str, float]:
-        """Calculate and validate growth metrics"""
-        growth = {}
-        
-        try:
-            # Direct growth metrics from API
-            growth_fields = [
-                'revenue_growth', 'profit_growth', 'asset_growth',
-                'equity_growth', 'eps_growth'
-            ]
-            
-            for field in growth_fields:
-                value = self._get_value_from_sources([growth_metrics, financial_metrics], [field])
-                # Validate growth rates (cap extreme values)
-                if abs(value) > 200:  # >200% growth might be unrealistic
-                    logger.warning(f"Extreme growth rate for {field}: {value}%")
-                    value = min(max(value, -100), 200)  # Cap between -100% and 200%
-                growth[field] = value
-            
-            # Calculate compound annual growth rates if historical data available
-            # (This would require multi-year data - placeholder for now)
-            growth['revenue_cagr_3y'] = growth_metrics.get('revenue_cagr_3y', 0)
-            growth['revenue_cagr_5y'] = growth_metrics.get('revenue_cagr_5y', 0)
-            growth['profit_cagr_3y'] = growth_metrics.get('profit_cagr_3y', 0)
-            
-            # Growth consistency metrics
-            revenue_growth = growth.get('revenue_growth', 0)
-            profit_growth = growth.get('profit_growth', 0)
-            
-            if revenue_growth != 0:
-                growth['profit_to_revenue_growth_ratio'] = self._safe_divide(
-                    profit_growth, revenue_growth
-                )
-            
-            # Growth quality score
-            growth_score = 0
-            if revenue_growth > 0:
-                growth_score += min(revenue_growth, 20)  # Cap at 20 points
-            if profit_growth > revenue_growth:
-                growth_score += 10  # Bonus for profit growing faster than revenue
-            
-            growth['growth_quality_score'] = max(0, min(100, growth_score))
-            
-        except Exception as e:
-            logger.warning(f"Error calculating growth metrics: {e}")
-            growth['growth_error'] = str(e)
-        
-        return growth
-    
-    def _calculate_market_ratios(self, financial_metrics: Dict, ratios: Dict) -> Dict[str, float]:
-        """Calculate market-based ratios if data available"""
-        market = {}
-        
-        try:
-            # Market ratios (if available from API)
-            market_fields = {
-                'pe_ratio': ['pe_ratio', 'price_to_earnings', 'p_e'],
-                'pb_ratio': ['pb_ratio', 'price_to_book', 'p_b'],
-                'dividend_yield': ['dividend_yield', 'div_yield'],
-                'earnings_per_share': ['eps', 'earnings_per_share'],
-                'book_value_per_share': ['book_value_per_share', 'bvps']
-            }
-            
-            for ratio_name, possible_keys in market_fields.items():
-                market[ratio_name] = self._get_value_from_sources(
-                    [ratios, financial_metrics], possible_keys
-                )
-            
-            # Market valuation indicators
-            pe_ratio = market.get('pe_ratio', 0)
-            pb_ratio = market.get('pb_ratio', 0)
-            
-            if pe_ratio > 0:
-                if pe_ratio < 15:
-                    market['pe_interpretation'] = 'undervalued'
-                elif pe_ratio > 25:
-                    market['pe_interpretation'] = 'overvalued'
-                else:
-                    market['pe_interpretation'] = 'fairly_valued'
-            
-            if pb_ratio > 0:
-                if pb_ratio < 1:
-                    market['pb_interpretation'] = 'undervalued'
-                elif pb_ratio > 3:
-                    market['pb_interpretation'] = 'overvalued'
-                else:
-                    market['pb_interpretation'] = 'fairly_valued'
-            
-        except Exception as e:
-            logger.warning(f"Error calculating market ratios: {e}")
-            market['market_error'] = str(e)
-        
-        return market
-    
-    def _calculate_composite_scores(self, metrics: Dict[str, float]) -> Dict[str, float]:
-        """Calculate composite financial health scores"""
-        scores = {}
-        
-        try:
-            # Profitability Score (0-100)
+            # Check ROE
             roe = metrics.get('roe', 0) or metrics.get('calculated_roe', 0)
-            profit_margin = metrics.get('profit_margin', 0) or metrics.get('calculated_profit_margin', 0)
-            roa = metrics.get('roa', 0) or metrics.get('calculated_roa', 0)
+            if roe > 15:
+                pros.append(self.pros_templates[0].format(company_id, roe))
+            elif roe > 10:
+                pros.append(self.pros_templates[6])  # Strong profitability
             
-            profitability_components = [
-                min(max(roe * 2, 0), 40),  # ROE component (max 40 points)
-                min(max(profit_margin * 3, 0), 30),  # Profit margin (max 30 points)
-                min(max(roa * 3, 0), 30)   # ROA component (max 30 points)
-            ]
-            scores['profitability_score'] = sum(profitability_components)
-            
-            # Liquidity Score (0-100)
+            # Check current ratio
             current_ratio = metrics.get('current_ratio', 0) or metrics.get('calculated_current_ratio', 0)
-            quick_ratio = metrics.get('quick_ratio', 0) or metrics.get('calculated_quick_ratio', 0)
+            if current_ratio > 1.5:
+                pros.append(self.pros_templates[2].format(company_id, current_ratio))
+            elif current_ratio > 1.2:
+                pros.append(self.pros_templates[7])  # Good liquidity
             
-            liquidity_components = [
-                min(max((current_ratio - 1) * 50, 0), 50),  # Current ratio (max 50)
-                min(max((quick_ratio - 0.5) * 50, 0), 50)   # Quick ratio (max 50)
-            ]
-            scores['liquidity_score'] = sum(liquidity_components)
-            
-            # Leverage/Stability Score (0-100)
+            # Check debt levels
             debt_to_equity = metrics.get('debt_to_equity', 0) or metrics.get('calculated_debt_to_equity', 0)
-            debt_ratio = metrics.get('debt_ratio', 0) or metrics.get('calculated_debt_ratio', 0)
+            if 0 < debt_to_equity < 0.5:
+                pros.append(self.pros_templates[3].format(company_id, debt_to_equity))
+            elif debt_to_equity < 1.0:
+                pros.append(self.pros_templates[8])  # Conservative debt
             
-            # Lower debt is better for stability
-            stability_components = [
-                max(0, 100 - (debt_to_equity * 20)),  # Debt-to-equity penalty
-                max(0, 100 - (debt_ratio * 100))      # Debt ratio penalty
-            ]
-            scores['stability_score'] = sum(stability_components) / 2
-            
-            # Growth Score (0-100)
-            revenue_growth = max(0, metrics.get('sales_growth', 0) or metrics.get('revenue_growth', 0))
-            profit_growth = max(0, metrics.get('profit_growth', 0))
-            
-            growth_components = [
-                min(revenue_growth * 2, 50),  # Revenue growth (max 50)
-                min(profit_growth * 2, 50)    # Profit growth (max 50)
-            ]
-            scores['growth_score'] = sum(growth_components)
-            
-            # Overall Financial Health Score (weighted average)
-            weights = {
-                'profitability_score': 0.35,
-                'liquidity_score': 0.20,
-                'stability_score': 0.25,
-                'growth_score': 0.20
-            }
-            
-            weighted_score = sum(
-                scores.get(metric, 0) * weight 
-                for metric, weight in weights.items()
-            )
-            scores['financial_health_score'] = min(100, max(0, weighted_score))
-            
-            # Risk Score (inverse of stability)
-            scores['risk_score'] = max(0, 100 - scores.get('stability_score', 50))
-            
-        except Exception as e:
-            logger.warning(f"Error calculating composite scores: {e}")
-            scores['composite_error'] = str(e)
-        
-        return scores
-    
-    def _calculate_ml_features(self, metrics: Dict[str, float]) -> Dict[str, float]:
-        """Calculate ML-ready features for analysis"""
-        ml_features = {}
-        
-        try:
-            # Normalized features for ML (0-1 scale)
-            roe = metrics.get('roe', 0) or metrics.get('calculated_roe', 0)
-            profit_margin = metrics.get('profit_margin', 0) or metrics.get('calculated_profit_margin', 0)
-            current_ratio = metrics.get('current_ratio', 0) or metrics.get('calculated_current_ratio', 0)
-            debt_to_equity = metrics.get('debt_to_equity', 0) or metrics.get('calculated_debt_to_equity', 0)
-            
-            # Normalize key metrics (sigmoid-like transformation)
-            ml_features['roe_normalized'] = self._normalize_metric(roe, 0, 50)
-            ml_features['profit_margin_normalized'] = self._normalize_metric(profit_margin, 0, 30)
-            ml_features['current_ratio_normalized'] = self._normalize_metric(current_ratio, 0.5, 3)
-            ml_features['debt_equity_normalized'] = 1 - self._normalize_metric(debt_to_equity, 0, 2)
-            
-            # Binary features for ML
-            ml_features['is_profitable'] = 1 if roe > 0 and profit_margin > 0 else 0
-            ml_features['is_liquid'] = 1 if current_ratio > 1.2 else 0
-            ml_features['is_low_debt'] = 1 if debt_to_equity < 0.5 else 0
-            revenue_growth = metrics.get('sales_growth', 0) or metrics.get('revenue_growth', 0)
-            ml_features['is_growing'] = 1 if revenue_growth > 5 else 0
-            
-            # Categorical features
+            # Check financial health score
             financial_health = metrics.get('financial_health_score', 0)
-            if financial_health >= 80:
-                ml_features['health_category'] = 3  # Excellent
-            elif financial_health >= 60:
-                ml_features['health_category'] = 2  # Good
-            elif financial_health >= 40:
-                ml_features['health_category'] = 1  # Fair
-            else:
-                ml_features['health_category'] = 0  # Poor
+            if financial_health > 70:
+                pros.append(self.pros_templates[4].format(company_id, financial_health))
             
-            # Interaction features
-            profitability = metrics.get('profitability_score', 0)
-            stability = metrics.get('stability_score', 0)
-            ml_features['profitability_stability_interaction'] = (profitability * stability) / 10000
+            # Check growth metrics
+            revenue_growth = (metrics.get('sales_growth', 0) or 
+                            metrics.get('estimated_revenue_growth', 0))
+            profit_growth = (metrics.get('profit_growth', 0) or 
+                           metrics.get('estimated_profit_growth', 0))
+            
+            if revenue_growth > 10:
+                pros.append(self.pros_templates[5].format(company_id))
+            
+            if profit_growth > 10:
+                pros.append(self.pros_templates[1].format(company_id, profit_growth))
+            
+            # Check profit margin
+            profit_margin = metrics.get('profit_margin', 0) or metrics.get('calculated_profit_margin', 0)
+            if profit_margin > 15:
+                pros.append(self.pros_templates[6])  # Strong profitability
+            
+            # If no specific pros found, add general positive statements
+            if not pros:
+                if financial_health > 50:
+                    pros.append(self.pros_templates[9])  # Consistent performance
+                else:
+                    pros.append("Company shows potential for improvement")
+            
+            # Limit to maximum 3 pros as per requirements
+            selected_pros = pros[:3]
             
         except Exception as e:
-            logger.warning(f"Error calculating ML features: {e}")
-            ml_features['ml_features_error'] = str(e)
+            logger.warning(f"Error generating pros for {company_id}: {e}")
+            selected_pros = [f"Company {company_id} financial analysis completed"]
         
-        return ml_features
+        return {
+            'selected_pros': selected_pros,
+            'pros_count': len(selected_pros),
+            'pros_criteria': 'Based on financial metrics > threshold values'
+        }
     
-    def _get_value_from_sources(self, sources: List[Dict], keys: List[str]) -> float:
-        """Get value from multiple possible sources and keys"""
-        for source in sources:
-            if isinstance(source, dict):
-                for key in keys:
-                    if key in source and source[key] is not None:
-                        try:
-                            value = source[key]
-                            if isinstance(value, str):
-                                if value.upper() in ['N/A', 'NA', 'NULL', '-', '']:
-                                    continue
-                                # Remove formatting and convert
-                                cleaned = value.replace(',', '').replace('%', '').replace('₹', '').strip()
-                                return float(cleaned)
-                            return float(value)
-                        except (ValueError, TypeError):
-                            continue
-        return 0.0
-    
-    def _safe_divide(self, numerator: float, denominator: float) -> float:
-        """Safely divide two numbers, handling zero division"""
+    def _generate_cons(self, company_id: str, metrics: Dict[str, float]) -> Dict[str, Any]:
+        """Generate cons based on financial metrics"""
+        cons = []
+        
         try:
-            if denominator == 0 or denominator is None:
-                self.calculation_stats['zero_division_errors'] += 1
-                return 0.0
-            result = numerator / denominator
-            # Handle infinity and NaN
-            if math.isinf(result) or math.isnan(result):
-                return 0.0
-            return result
-        except (TypeError, ZeroDivisionError):
-            self.calculation_stats['zero_division_errors'] += 1
-            return 0.0
+            # Check ROE
+            roe = metrics.get('roe', 0) or metrics.get('calculated_roe', 0)
+            if 0 < roe < 8:
+                cons.append(self.cons_templates[0].format(company_id, roe))
+            elif roe == 0:
+                cons.append(self.cons_templates[5])  # Profitability challenges
+            
+            # Check current ratio
+            current_ratio = metrics.get('current_ratio', 0) or metrics.get('calculated_current_ratio', 0)
+            if 0 < current_ratio < 1.0:
+                cons.append(self.cons_templates[3].format(company_id, current_ratio))
+            elif current_ratio == 0:
+                cons.append(self.cons_templates[6])  # Liquidity concerns
+            
+            # Check debt levels
+            debt_to_equity = metrics.get('debt_to_equity', 0) or metrics.get('calculated_debt_to_equity', 0)
+            if debt_to_equity > 2.0:
+                cons.append(self.cons_templates[2].format(company_id, debt_to_equity))
+            elif debt_to_equity > 1.5:
+                cons.append(self.cons_templates[7])  # High debt burden
+            
+            # Check financial health score
+            financial_health = metrics.get('financial_health_score', 0)
+            if 0 < financial_health < 40:
+                cons.append(self.cons_templates[4].format(company_id, financial_health))
+            
+            # Check growth metrics
+            revenue_growth = (metrics.get('sales_growth', 0) or 
+                            metrics.get('estimated_revenue_growth', 0))
+            if 0 < revenue_growth < 5:
+                cons.append(self.cons_templates[1].format(company_id, revenue_growth))
+            
+            # Check for missing key metrics (indicates data quality issues)
+            key_metrics = ['roe', 'current_ratio', 'debt_to_equity', 'profit_margin']
+            missing_metrics = 0
+            for metric in key_metrics:
+                if (metrics.get(metric, 0) == 0 and 
+                    metrics.get(f'calculated_{metric}', 0) == 0):
+                    missing_metrics += 1
+            
+            if missing_metrics >= 2:
+                cons.append(self.cons_templates[8])  # Inconsistent performance
+            
+            # If no specific cons found, add general areas for improvement
+            if not cons:
+                if financial_health < 60:
+                    cons.append(self.cons_templates[9])  # Needs improvements
+                else:
+                    cons.append("Company could optimize operational efficiency")
+            
+            # Limit to maximum 3 cons as per requirements
+            selected_cons = cons[:3]
+            
+        except Exception as e:
+            logger.warning(f"Error generating cons for {company_id}: {e}")
+            selected_cons = [f"Company {company_id} requires detailed analysis"]
+        
+        return {
+            'selected_cons': selected_cons,
+            'cons_count': len(selected_cons),
+            'cons_criteria': 'Based on financial metrics < threshold values'
+        }
     
-    def _normalize_metric(self, value: float, min_val: float, max_val: float) -> float:
-        """Normalize metric to 0-1 scale"""
+    def _calculate_overall_score(self, metrics: Dict[str, float]) -> Dict[str, Any]:
+        """Calculate overall analysis score"""
         try:
-            if max_val <= min_val:
-                return 0.0
-            normalized = (value - min_val) / (max_val - min_val)
-            return max(0.0, min(1.0, normalized))  # Clamp to [0,1]
-        except:
-            return 0.0
+            # Get key scores
+            financial_health = metrics.get('financial_health_score', 0)
+            profitability_score = metrics.get('profitability_score', 0)
+            liquidity_score = metrics.get('liquidity_score', 0)
+            stability_score = metrics.get('stability_score', 0)
+            growth_score = metrics.get('growth_score', 0)
+            
+            # Calculate weighted final score
+            weights = {
+                'financial_health_score': 0.3,
+                'profitability_score': 0.25,
+                'liquidity_score': 0.15,
+                'stability_score': 0.15,
+                'growth_score': 0.15
+            }
+            
+            final_score = (
+                financial_health * weights['financial_health_score'] +
+                profitability_score * weights['profitability_score'] +
+                liquidity_score * weights['liquidity_score'] +
+                stability_score * weights['stability_score'] +
+                growth_score * weights['growth_score']
+            )
+            
+            # Determine confidence level
+            non_zero_scores = sum(1 for score in [financial_health, profitability_score, 
+                                               liquidity_score, stability_score, growth_score] if score > 0)
+            
+            if non_zero_scores >= 4:
+                confidence_level = 'high'
+            elif non_zero_scores >= 2:
+                confidence_level = 'medium'
+            else:
+                confidence_level = 'low'
+            
+            return {
+                'final_score': round(final_score, 1),
+                'confidence_level': confidence_level,
+                'component_scores': {
+                    'financial_health': financial_health,
+                    'profitability': profitability_score,
+                    'liquidity': liquidity_score,
+                    'stability': stability_score,
+                    'growth': growth_score
+                },
+                'score_interpretation': self._interpret_score(final_score)
+            }
+            
+        except Exception as e:
+            logger.warning(f"Error calculating overall score: {e}")
+            return {
+                'final_score': 50.0,
+                'confidence_level': 'low',
+                'calculation_error': str(e)
+            }
     
-    def get_metrics_summary(self, calculated_metrics: Dict[str, float]) -> Dict[str, Any]:
-        """Get summary of calculated metrics organized by category"""
-        summary = {
-            'total_metrics': len(calculated_metrics),
-            'categories': {},
-            'key_insights': []
+    def _interpret_score(self, score: float) -> str:
+        """Interpret the overall financial score"""
+        if score >= 80:
+            return 'Excellent financial position'
+        elif score >= 65:
+            return 'Good financial health'
+        elif score >= 50:
+            return 'Average financial performance'
+        elif score >= 35:
+            return 'Below average financial metrics'
+        else:
+            return 'Weak financial position'
+    
+    def _create_ml_summary(self, metrics: Dict[str, float]) -> Dict[str, Any]:
+        """Create ML analysis summary"""
+        return {
+            'analysis_method': 'Rule-based financial analysis',
+            'metrics_analyzed': len(metrics),
+            'risk_assessment': self._assess_risk_level(metrics),
+            'confidence_score': self._calculate_confidence_score(metrics),
+            'key_findings': self._extract_key_findings(metrics)
+        }
+    
+    def _assess_risk_level(self, metrics: Dict[str, float]) -> str:
+        """Assess overall risk level"""
+        try:
+            risk_indicators = []
+            
+            # High debt indicates higher risk
+            debt_ratio = metrics.get('debt_to_equity', 0) or metrics.get('calculated_debt_to_equity', 0)
+            if debt_ratio > 1.5:
+                risk_indicators.append('high_debt')
+            
+            # Low liquidity indicates higher risk
+            current_ratio = metrics.get('current_ratio', 0) or metrics.get('calculated_current_ratio', 0)
+            if current_ratio < 1.0:
+                risk_indicators.append('low_liquidity')
+            
+            # Low profitability indicates higher risk
+            roe = metrics.get('roe', 0) or metrics.get('calculated_roe', 0)
+            if roe < 10:
+                risk_indicators.append('low_profitability')
+            
+            # Determine overall risk
+            if len(risk_indicators) >= 2:
+                return 'high'
+            elif len(risk_indicators) == 1:
+                return 'medium'
+            else:
+                return 'low'
+                
+        except Exception:
+            return 'medium'
+    
+    def _calculate_confidence_score(self, metrics: Dict[str, float]) -> float:
+        """Calculate confidence in the analysis"""
+        try:
+            # Base confidence on number of available metrics
+            total_metrics = len([v for v in metrics.values() if isinstance(v, (int, float)) and v != 0])
+            
+            if total_metrics >= 10:
+                return 85.0
+            elif total_metrics >= 6:
+                return 70.0
+            elif total_metrics >= 3:
+                return 55.0
+            else:
+                return 40.0
+                
+        except Exception:
+            return 50.0
+    
+    def _extract_key_findings(self, metrics: Dict[str, float]) -> List[str]:
+        """Extract key findings from metrics"""
+        findings = []
+        
+        try:
+            financial_health = metrics.get('financial_health_score', 0)
+            if financial_health > 70:
+                findings.append('Strong overall financial health')
+            elif financial_health < 40:
+                findings.append('Financial health needs improvement')
+            
+            roe = metrics.get('roe', 0) or metrics.get('calculated_roe', 0)
+            if roe > 15:
+                findings.append('Excellent return on equity')
+            elif roe < 8:
+                findings.append('Low return on equity')
+            
+            current_ratio = metrics.get('current_ratio', 0) or metrics.get('calculated_current_ratio', 0)
+            if current_ratio > 2:
+                findings.append('Strong liquidity position')
+            elif current_ratio < 1:
+                findings.append('Liquidity concerns present')
+            
+        except Exception:
+            findings.append('Analysis completed with available data')
+        
+        return findings[:3]  # Limit to top 3 findings
+    
+    def _generate_insights_summary(self, company_id: str, metrics: Dict[str, float], 
+                                 pros: Dict, cons: Dict) -> Dict[str, Any]:
+        """Generate comprehensive insights summary"""
+        return {
+            'total_insights': len(pros['selected_pros']) + len(cons['selected_cons']),
+            'summary_points': [
+                f"Analysis identified {len(pros['selected_pros'])} key strengths",
+                f"Analysis identified {len(cons['selected_cons'])} areas for improvement",
+                f"Financial health score: {metrics.get('financial_health_score', 0):.1f}/100"
+            ],
+            'recommendation': self._generate_recommendation(metrics, pros, cons)
+        }
+    
+    def _generate_recommendation(self, metrics: Dict[str, float], pros: Dict, cons: Dict) -> str:
+        """Generate investment/analysis recommendation"""
+        try:
+            financial_health = metrics.get('financial_health_score', 0)
+            pros_count = pros['pros_count']
+            cons_count = cons['cons_count']
+            
+            if financial_health >= 70 and pros_count >= 2:
+                return 'Positive outlook - Company shows strong financial metrics'
+            elif financial_health >= 50 and pros_count >= cons_count:
+                return 'Moderate outlook - Company has balanced strengths and weaknesses'
+            elif cons_count > pros_count:
+                return 'Cautious outlook - Company faces several challenges'
+            else:
+                return 'Neutral outlook - Further analysis recommended'
+                
+        except Exception:
+            return 'Analysis completed - Review detailed metrics for decision making'
+    
+    def _create_empty_analysis(self, company_id: str, error_message: str) -> Dict[str, Any]:
+        """Create empty analysis result for failed cases"""
+        return {
+            'company_id': company_id,
+            'analysis_timestamp': datetime.now().isoformat(),
+            'error': error_message,
+            'pros': {
+                'selected_pros': [],
+                'pros_count': 0,
+                'pros_criteria': 'Analysis failed'
+            },
+            'cons': {
+                'selected_cons': [],
+                'cons_count': 0,
+                'cons_criteria': 'Analysis failed'
+            },
+            'overall_score': {
+                'final_score': 0,
+                'confidence_level': 'low',
+                'error': error_message
+            },
+            'ml_analysis': {
+                'analysis_method': 'Failed analysis',
+                'error': error_message
+            },
+            'insights_summary': {
+                'total_insights': 0,
+                'summary_points': ['Analysis failed'],
+                'recommendation': 'Unable to provide recommendation due to analysis failure'
+            },
+            'title': f"{company_id}: Analysis Failed"
+        }
+    
+    # Keep your existing methods for backward compatibility
+    def analyze_company_complete(self, company_id: str, raw_financial_data: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Complete financial analysis pipeline (original method)
+        
+        Args:
+            company_id: Company identifier
+            raw_financial_data: Raw financial data from API/source
+            
+        Returns:
+            Complete analysis results including metrics, pros, cons, and insights
+        """
+        analysis_start = datetime.now()
+        
+        try:
+            logger.info(f"Starting complete financial analysis for {company_id}")
+            
+            # Step 1: Calculate financial metrics
+            logger.info("Step 1: Calculating financial metrics...")
+            calculated_metrics = self.metrics_calculator.calculate_comprehensive_metrics(raw_financial_data)
+            
+            if not calculated_metrics or 'calculation_error' in calculated_metrics:
+                error_msg = calculated_metrics.get('calculation_error', 'Metrics calculation failed')
+                return self._create_failed_analysis(company_id, error_msg, analysis_start)
+            
+            # Step 2: Perform ML analysis using the new method
+            logger.info("Step 2: Performing ML analysis...")
+            analysis_results = self.analyze_company(company_id, calculated_metrics)
+            
+            if 'error' in analysis_results:
+                return self._create_failed_analysis(company_id, analysis_results['error'], analysis_start)
+            
+            # Step 3: Combine results into comprehensive report
+            logger.info("Step 3: Generating comprehensive report...")
+            comprehensive_results = self._create_comprehensive_report(
+                company_id, raw_financial_data, calculated_metrics, analysis_results, analysis_start
+            )
+            
+            return comprehensive_results
+            
+        except Exception as e:
+            error_msg = f"Pipeline error for {company_id}: {str(e)}"
+            logger.error(error_msg)
+            return self._create_failed_analysis(company_id, error_msg, analysis_start)
+    
+    def _create_comprehensive_report(self, company_id: str, raw_data: Dict[str, Any], 
+                                calculated_metrics: Dict[str, float], 
+                                analysis_results: Dict[str, Any],
+                                analysis_start: datetime) -> Dict[str, Any]:
+        """Create comprehensive analysis report"""
+        
+        analysis_duration = (datetime.now() - analysis_start).total_seconds()
+        
+        comprehensive_report = {
+            # Basic Information
+            'company_id': company_id,
+            'report_timestamp': datetime.now().isoformat(),
+            'analysis_duration_seconds': analysis_duration,
+            'report_type': 'comprehensive_financial_analysis',
+            
+            # Core Results - use the results from analyze_company
+            'calculated_metrics': calculated_metrics,
+            'ml_analysis': analysis_results.get('ml_analysis', {}),
+            'pros': analysis_results.get('pros', {}),
+            'cons': analysis_results.get('cons', {}),
+            'title': analysis_results.get('title', f"{company_id}: Financial Analysis"),
+            'overall_score': analysis_results.get('overall_score', {}),
+            'insights_summary': analysis_results.get('insights_summary', {})
         }
         
-        try:
-            # Organize metrics by category
-            for category, metric_list in self.metric_categories.items():
-                category_metrics = {}
-                for metric in metric_list:
-                    if metric in calculated_metrics:
-                        category_metrics[metric] = calculated_metrics[metric]
-                    # Also check for calculated_ prefixed versions
-                    calc_metric = f"calculated_{metric}"
-                    if calc_metric in calculated_metrics:
-                        category_metrics[calc_metric] = calculated_metrics[calc_metric]
-                
-                summary['categories'][category] = category_metrics
-            
-            # Generate key insights
-            insights = []
-            
-            # Profitability insights
-            roe = calculated_metrics.get('roe', 0) or calculated_metrics.get('calculated_roe', 0)
-            if roe > 20:
-                insights.append(f"Excellent ROE of {roe:.1f}%")
-            elif roe < 10:
-                insights.append(f"Low ROE of {roe:.1f}%")
-            
-            # Growth insights
-            revenue_growth = calculated_metrics.get('sales_growth', 0) or calculated_metrics.get('revenue_growth', 0)
-            if revenue_growth > 15:
-                insights.append(f"Strong revenue growth of {revenue_growth:.1f}%")
-            elif revenue_growth < 0:
-                insights.append(f"Revenue declining by {abs(revenue_growth):.1f}%")
-            
-            # Debt insights
-            debt_to_equity = calculated_metrics.get('debt_to_equity', 0) or calculated_metrics.get('calculated_debt_to_equity', 0)
-            if debt_to_equity < 0.3:
-                insights.append("Company is almost debt-free")
-            elif debt_to_equity > 1:
-                insights.append("High debt levels - potential risk")
-            
-            # Liquidity insights
-            current_ratio = calculated_metrics.get('current_ratio', 0) or calculated_metrics.get('calculated_current_ratio', 0)
-            if current_ratio > 2:
-                insights.append("Strong liquidity position")
-            elif current_ratio < 1:
-                insights.append("Liquidity concerns - current ratio below 1")
-            
-            summary['key_insights'] = insights
-            
-        except Exception as e:
-            logger.warning(f"Error generating metrics summary: {e}")
-            summary['summary_error'] = str(e)
-        
-        return summary
+        return comprehensive_report
     
-    def get_calculation_statistics(self) -> Dict[str, Any]:
-        """Get statistics about calculation operations"""
-        total_calcs = self.calculation_stats['total_calculations']
+    def _create_failed_analysis(self, company_id: str, error_message: str, 
+                            analysis_start: datetime) -> Dict[str, Any]:
+        """Create result structure for failed analysis"""
         return {
-            'total_calculations': total_calcs,
-            'calculation_errors': self.calculation_stats['calculation_errors'],
-            'zero_division_errors': self.calculation_stats['zero_division_errors'],
+            'company_id': company_id,
+            'report_timestamp': datetime.now().isoformat(),
+            'analysis_duration_seconds': (datetime.now() - analysis_start).total_seconds(),
+            'report_type': 'failed_analysis',
+            'error': error_message,
+            'calculated_metrics': {},
+            'ml_analysis': {},
+            'pros': {'selected_pros': [], 'pros_count': 0},
+            'cons': {'selected_cons': [], 'cons_count': 0},
+            'title': f"{company_id}: Analysis Failed",
+            'overall_score': {'final_score': 0, 'confidence_level': 'low'},
+            'insights_summary': {'summary_points': [], 'total_insights': 0}
+        }
+    
+    def get_analysis_statistics(self) -> Dict[str, Any]:
+        """Get analysis statistics"""
+        return {
+            'total_analyses': self.pipeline_stats['total_analyses'],
+            'successful_analyses': self.pipeline_stats['successful_analyses'],
+            'failed_analyses': self.pipeline_stats['failed_analyses'],
             'success_rate': (
-                (total_calcs - self.calculation_stats['calculation_errors']) 
-                / max(1, total_calcs)
-            ) * 100,
-            'error_rate': (
-                self.calculation_stats['calculation_errors'] / max(1, total_calcs)
-            ) * 100
+                self.pipeline_stats['successful_analyses'] / 
+                max(1, self.pipeline_stats['total_analyses'])
+            ) * 100 if self.pipeline_stats['total_analyses'] > 0 else 0
         }
     
     def reset_statistics(self):
-        """Reset calculation statistics"""
-        self.calculation_stats = {
-            'total_calculations': 0,
-            'calculation_errors': 0,
-            'zero_division_errors': 0
+        """Reset analysis statistics"""
+        self.pipeline_stats = {
+            'total_analyses': 0,
+            'successful_analyses': 0,
+            'failed_analyses': 0,
+            'start_time': datetime.now()
         }
-    
-    def validate_metrics(self, calculated_metrics: Dict[str, float]) -> Dict[str, Any]:
-        """Validate calculated metrics for reasonableness"""
-        validation_results = {
-            'is_valid': True,
-            'warnings': [],
-            'errors': []
-        }
-        
-        try:
-            # Define reasonable ranges for key metrics
-            validation_rules = {
-                'roe': (-50, 100, '%'),
-                'roa': (-20, 50, '%'),
-                'current_ratio': (0, 10, 'ratio'),
-                'debt_to_equity': (0, 5, 'ratio'),
-                'profit_margin': (-50, 50, '%'),
-                'financial_health_score': (0, 100, 'score')
-            }
-            
-            for metric, (min_val, max_val, unit) in validation_rules.items():
-                value = calculated_metrics.get(metric, 0)
-                
-                if value < min_val or value > max_val:
-                    warning_msg = f"{metric} value {value:.2f}{unit} outside expected range ({min_val}, {max_val})"
-                    validation_results['warnings'].append(warning_msg)
-                    logger.warning(warning_msg)
-            
-            # Check for calculation errors
-            error_metrics = [k for k in calculated_metrics.keys() if k.endswith('_error')]
-            if error_metrics:
-                validation_results['errors'].extend(error_metrics)
-                validation_results['is_valid'] = False
-            
-            # Check for all zeros (potential data issue)
-            non_zero_metrics = [v for v in calculated_metrics.values() 
-                            if isinstance(v, (int, float)) and v != 0]
-            if len(non_zero_metrics) < 5:
-                validation_results['warnings'].append("Most metrics are zero - possible data quality issue")
-            
-        except Exception as e:
-            validation_results['errors'].append(f"Validation error: {str(e)}")
-            validation_results['is_valid'] = False
-        
-        return validation_results

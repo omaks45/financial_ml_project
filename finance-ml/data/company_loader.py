@@ -1,5 +1,5 @@
 """
-data/company_loader.py
+data/company_loader.py - FIXED VERSION
 Company Data Loading from Excel Files
 
 This module handles:
@@ -29,8 +29,13 @@ class CompanyDataLoader:
             data_directory: Directory containing Excel files
         """
         self.data_directory = data_directory
-        self.supported_filename = [
+        # FIXED: Changed from 'supported_filename' to 'supported_filenames' (plural)
+        self.supported_filenames = [
+            "Nifty100Companies.xlsx",
             "company_id.xlsx",
+            "companies.xlsx",
+            "nifty100.xlsx",
+            "company_list.xlsx"
         ]
         
         self.supported_column_names = [
@@ -61,8 +66,14 @@ class CompanyDataLoader:
                 logger.warning("No Excel file found in data directory")
                 logger.info("Available files in data directory:")
                 self._list_data_directory_contents()
-                logger.info("Using sample companies for testing")
-                return self._get_sample_companies()
+                logger.info("Creating sample Excel file for testing...")
+                sample_file = self.save_sample_excel_file()
+                if sample_file:
+                    logger.info(f"Using created sample file: {sample_file}")
+                    excel_file_path = sample_file
+                else:
+                    logger.info("Using hardcoded sample companies")
+                    return self._get_sample_companies()
             
             # Load Excel file
             logger.info(f"Loading Excel file: {excel_file_path}")
@@ -143,17 +154,19 @@ class CompanyDataLoader:
             List of company ID strings
         """
         try:
-            # Read Excel file
+            # Read Excel file - try different sheet options
             logger.info(f"Reading Excel file: {filepath}")
-            df = pd.read_excel(filepath)
+            
+            # First try to read the first sheet
+            df = pd.read_excel(filepath, sheet_name=0)
             
             logger.info(f"Excel file loaded successfully")
             logger.info(f"Shape: {df.shape}")
             logger.info(f"Columns: {list(df.columns)}")
             
             # Display first few rows for debugging
-            logger.info("First 3 rows of data:")
-            logger.info(f"{df.head(3).to_string()}")
+            logger.info("First 5 rows of data:")
+            logger.info(f"\n{df.head().to_string()}")
             
             # Extract company IDs
             company_ids = self._extract_company_ids_from_dataframe(df)
@@ -162,7 +175,15 @@ class CompanyDataLoader:
             
         except Exception as e:
             logger.error(f"Error reading Excel file {filepath}: {e}")
-            return []
+            # Try reading with different parameters
+            try:
+                logger.info("Trying to read Excel with different parameters...")
+                df = pd.read_excel(filepath, header=0)
+                company_ids = self._extract_company_ids_from_dataframe(df)
+                return company_ids
+            except Exception as e2:
+                logger.error(f"Failed with alternative parameters: {e2}")
+                return []
     
     def _extract_company_ids_from_dataframe(self, df: pd.DataFrame) -> List[str]:
         """
@@ -177,6 +198,9 @@ class CompanyDataLoader:
         company_ids = []
         
         try:
+            logger.info(f"DataFrame shape: {df.shape}")
+            logger.info(f"Available columns: {list(df.columns)}")
+            
             # Try each supported column name
             for col_name in self.supported_column_names:
                 if col_name in df.columns:
@@ -184,10 +208,11 @@ class CompanyDataLoader:
                     
                     # Extract and clean company IDs
                     ids_series = df[col_name].dropna()  # Remove NaN values
+                    logger.info(f"Non-null values in column '{col_name}': {len(ids_series)}")
                     
                     # Convert to string and clean
                     company_ids = []
-                    for id_val in ids_series:
+                    for idx, id_val in enumerate(ids_series):
                         if pd.notna(id_val):  # Additional NaN check
                             # Convert to string and clean
                             clean_id = str(id_val).strip().upper()
@@ -195,9 +220,12 @@ class CompanyDataLoader:
                             # Skip empty or invalid entries
                             if clean_id and clean_id not in ['NAN', 'NULL', '', 'NONE']:
                                 company_ids.append(clean_id)
+                                if idx < 10:  # Log first 10 for debugging
+                                    logger.debug(f"  Row {idx}: '{id_val}' -> '{clean_id}'")
                     
                     if company_ids:
                         logger.info(f"Extracted {len(company_ids)} company IDs from column '{col_name}'")
+                        logger.info(f"First 10 company IDs: {company_ids[:10]}")
                         return company_ids
             
             # If no recognized column found, try the first column
@@ -206,14 +234,19 @@ class CompanyDataLoader:
                 logger.info(f"No recognized column found, trying first column: '{first_col}'")
                 
                 ids_series = df[first_col].dropna()
-                for id_val in ids_series:
+                logger.info(f"Non-null values in first column: {len(ids_series)}")
+                
+                for idx, id_val in enumerate(ids_series):
                     if pd.notna(id_val):
                         clean_id = str(id_val).strip().upper()
                         if clean_id and clean_id not in ['NAN', 'NULL', '', 'NONE']:
                             company_ids.append(clean_id)
+                            if idx < 10:  # Log first 10 for debugging
+                                logger.debug(f"  Row {idx}: '{id_val}' -> '{clean_id}'")
                 
                 if company_ids:
                     logger.info(f"Extracted {len(company_ids)} company IDs from first column")
+                    logger.info(f"First 10 company IDs: {company_ids[:10]}")
                     return company_ids
             
             # If still no company IDs found, show available data for debugging
@@ -221,8 +254,8 @@ class CompanyDataLoader:
                 logger.warning("No valid company IDs found in any column")
                 logger.info("Available columns and sample data:")
                 for col in df.columns[:5]:  # Show first 5 columns
-                    sample_data = df[col].dropna().head(3).tolist()
-                    logger.info(f"  {col}: {sample_data}")
+                    sample_data = df[col].dropna().head(5).tolist()
+                    logger.info(f"  Column '{col}' sample: {sample_data}")
             
         except Exception as e:
             logger.error(f"Error extracting company IDs from DataFrame: {e}")
@@ -235,6 +268,7 @@ class CompanyDataLoader:
             if os.path.exists(self.data_directory):
                 files = os.listdir(self.data_directory)
                 if files:
+                    logger.info(f"Files in '{self.data_directory}' directory:")
                     for file in files:
                         file_path = os.path.join(self.data_directory, file)
                         file_size = os.path.getsize(file_path) if os.path.isfile(file_path) else 0
@@ -253,9 +287,12 @@ class CompanyDataLoader:
         Returns:
             List of sample company ID strings
         """
+        # Extended sample with more companies for better testing
         sample_companies = [
             "TCS", "HDFCBANK", "DMART", "INFY", "RELIANCE", 
-            "WIPRO", "BAJFINANCE", "AXISBANK", "ICICIBANK", "SBIN"
+            "WIPRO", "BAJFINANCE", "AXISBANK", "ICICIBANK", "SBIN",
+            "LT", "ASIANPAINT", "NESTLEIND", "KOTAKBANK", "BHARTIARTL",
+            "MARUTI", "TITAN", "HINDUNILVR", "ITC", "POWERGRID"
         ]
         
         logger.info(f"Using sample companies: {sample_companies}")
@@ -263,7 +300,7 @@ class CompanyDataLoader:
     
     def save_sample_excel_file(self) -> str:
         """
-        Create a sample Excel file for testing purposes
+        Create a sample Excel file with Nifty 100 companies for testing purposes
         
         Returns:
             Path to created sample file
@@ -272,22 +309,43 @@ class CompanyDataLoader:
             # Ensure data directory exists
             os.makedirs(self.data_directory, exist_ok=True)
             
-            # Create sample data
+            # Create sample data with more companies (representative of Nifty 100)
             sample_data = {
-                'company_id': [
+                'Symbol': [  # Using 'Symbol' as it's a common column name
                     'TCS', 'HDFCBANK', 'DMART', 'INFY', 'RELIANCE',
                     'WIPRO', 'BAJFINANCE', 'AXISBANK', 'ICICIBANK', 'SBIN',
-                    'LT', 'ASIANPAINT', 'NESTLEIND', 'KOTAKBANK', 'BHARTIARTL'
+                    'LT', 'ASIANPAINT', 'NESTLEIND', 'KOTAKBANK', 'BHARTIARTL',
+                    'MARUTI', 'TITAN', 'HINDUNILVR', 'ITC', 'POWERGRID',
+                    'SUNPHARMA', 'ULTRACEMCO', 'ONGC', 'NTPC', 'ADANIPORTS',
+                    'JSWSTEEL', 'TATASTEEL', 'COALINDIA', 'INDUSINDBK', 'GRASIM',
+                    'TECHM', 'HCLTECH', 'DRREDDY', 'CIPLA', 'DIVISLAB',
+                    'BPCL', 'IOC', 'HINDALCO', 'BAJAJ-AUTO', 'HEROMOTOCO',
+                    'EICHERMOT', 'BAJAJFINSV', 'BRITANNIA', 'DABUR', 'GODREJCP',
+                    'MARICO', 'UPL', 'PIDILITIND', 'BERGEPAINT', 'SBILIFE'
                 ],
-                'company_name': [
-                    'Tata Consultancy Services', 'HDFC Bank', 'D-Mart', 'Infosys', 'Reliance Industries',
+                'Company_Name': [
+                    'Tata Consultancy Services', 'HDFC Bank', 'Avenue Supermarts', 'Infosys', 'Reliance Industries',
                     'Wipro', 'Bajaj Finance', 'Axis Bank', 'ICICI Bank', 'State Bank of India',
-                    'Larsen & Toubro', 'Asian Paints', 'Nestle India', 'Kotak Mahindra Bank', 'Bharti Airtel'
+                    'Larsen & Toubro', 'Asian Paints', 'Nestle India', 'Kotak Mahindra Bank', 'Bharti Airtel',
+                    'Maruti Suzuki', 'Titan Company', 'Hindustan Unilever', 'ITC', 'Power Grid Corporation',
+                    'Sun Pharmaceutical', 'UltraTech Cement', 'Oil & Natural Gas Corporation', 'NTPC', 'Adani Ports',
+                    'JSW Steel', 'Tata Steel', 'Coal India', 'IndusInd Bank', 'Grasim Industries',
+                    'Tech Mahindra', 'HCL Technologies', 'Dr. Reddys Laboratories', 'Cipla', 'Divi\'s Laboratories',
+                    'Bharat Petroleum Corporation', 'Indian Oil Corporation', 'Hindalco Industries', 'Bajaj Auto', 'Hero MotoCorp',
+                    'Eicher Motors', 'Bajaj Finserv', 'Britannia Industries', 'Dabur India', 'Godrej Consumer Products',
+                    'Marico', 'UPL', 'Pidilite Industries', 'Berger Paints', 'SBI Life Insurance'
                 ],
-                'sector': [
+                'Sector': [
                     'IT', 'Banking', 'Retail', 'IT', 'Oil & Gas',
                     'IT', 'Financial Services', 'Banking', 'Banking', 'Banking',
-                    'Construction', 'Paints', 'FMCG', 'Banking', 'Telecom'
+                    'Construction', 'Paints', 'FMCG', 'Banking', 'Telecom',
+                    'Automobile', 'Consumer Goods', 'FMCG', 'FMCG', 'Utilities',
+                    'Pharmaceuticals', 'Cement', 'Oil & Gas', 'Utilities', 'Ports',
+                    'Metals', 'Metals', 'Mining', 'Banking', 'Textiles',
+                    'IT', 'IT', 'Pharmaceuticals', 'Pharmaceuticals', 'Pharmaceuticals',
+                    'Oil & Gas', 'Oil & Gas', 'Metals', 'Automobile', 'Automobile',
+                    'Automobile', 'Financial Services', 'FMCG', 'FMCG', 'FMCG',
+                    'FMCG', 'Chemicals', 'Chemicals', 'Paints', 'Insurance'
                 ]
             }
             
@@ -297,7 +355,7 @@ class CompanyDataLoader:
             df.to_excel(sample_file_path, index=False)
             
             logger.info(f"Created sample Excel file: {sample_file_path}")
-            logger.info(f"File contains {len(sample_data['company_id'])} companies")
+            logger.info(f"File contains {len(sample_data['Symbol'])} companies")
             
             return sample_file_path
             
@@ -407,7 +465,6 @@ class CompanyDataLoader:
     
     def get_loading_statistics(self) -> Dict[str, Any]:
         """Get statistics about company loading operations"""
-        # This would be expanded to track loading statistics over time
         return {
             'supported_filenames': self.supported_filenames,
             'supported_columns': self.supported_column_names,
