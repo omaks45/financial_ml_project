@@ -1,0 +1,44 @@
+2025-09-16 01:09:31,405 - INFO - OptimizedFinancialAnalyzer initialized
+2025-09-16 01:09:31,406 - INFO - ============================================================
+2025-09-16 01:09:31,406 - INFO - DAY 4: ML INSIGHTS GENERATION PIPELINE
+2025-09-16 01:09:31,406 - INFO - ============================================================
+2025-09-16 01:09:31,406 - INFO - Processing limited set: 15 companies
+2025-09-16 01:09:31,406 - INFO - Starting batch analysis of 15 companies
+2025-09-16 01:09:31,408 - INFO - ✓ COMPANY_A analyzed in 0.000s - Score: 77.5
+2025-09-16 01:09:31,408 - INFO - ✓ COMPANY_B analyzed in 0.000s - Score: 73.5
+2025-09-16 01:09:31,409 - INFO - ✓ COMPANY_C analyzed in 0.000s - Score: 61.8
+2025-09-16 01:09:31,409 - INFO - ✓ COMPANY_D analyzed in 0.000s - Score: 51.8
+2025-09-16 01:09:31,410 - INFO - ✓ COMPANY_E analyzed in 0.000s - Score: 78.8
+2025-09-16 01:09:31,410 - INFO - ✓ COMPANY_F analyzed in 0.000s - Score: 73.5
+2025-09-16 01:09:31,410 - INFO - ✓ COMPANY_G analyzed in 0.000s - Score: 60.5
+2025-09-16 01:09:31,411 - INFO - ✓ COMPANY_H analyzed in 0.000s - Score: 51.8
+2025-09-16 01:09:31,411 - INFO - ✓ COMPANY_I analyzed in 0.000s - Score: 77.5
+2025-09-16 01:09:31,412 - INFO - ✓ COMPANY_J analyzed in 0.000s - Score: 74.8
+2025-09-16 01:09:31,412 - INFO - ✓ COMPANY_K analyzed in 0.000s - Score: 61.8
+2025-09-16 01:09:31,413 - INFO - ✓ COMPANY_L analyzed in 0.000s - Score: 50.5
+2025-09-16 01:09:31,413 - INFO - ✓ TCS analyzed in 0.000s - Score: 78.8
+2025-09-16 01:09:31,414 - INFO - ✓ HDFCBANK analyzed in 0.000s - Score: 73.5
+2025-09-16 01:09:31,414 - INFO - ✓ INFY analyzed in 0.000s - Score: 74.8
+2025-09-16 01:09:31,416 - INFO - Batch analysis completed in 0.01s - Success: 15/15
+2025-09-16 01:16:24,714 - INFO - OptimizedFinancialAnalyzer initialized
+2025-09-16 01:16:24,714 - INFO - ============================================================
+2025-09-16 01:16:24,714 - INFO - DAY 4: ML INSIGHTS GENERATION PIPELINE
+2025-09-16 01:16:24,714 - INFO - ============================================================
+2025-09-16 01:16:24,714 - INFO - Processing limited set: 15 companies
+2025-09-16 01:16:24,715 - INFO - Starting batch analysis of 15 companies
+2025-09-16 01:16:24,716 - INFO - ✓ COMPANY_A analyzed in 0.000s - Score: 78.8
+2025-09-16 01:16:24,716 - INFO - ✓ COMPANY_B analyzed in 0.000s - Score: 73.5
+2025-09-16 01:16:24,717 - INFO - ✓ COMPANY_C analyzed in 0.000s - Score: 60.5
+2025-09-16 01:16:24,717 - INFO - ✓ COMPANY_D analyzed in 0.000s - Score: 50.5
+2025-09-16 01:16:24,718 - INFO - ✓ COMPANY_F analyzed in 0.000s - Score: 73.5
+2025-09-16 01:16:24,718 - INFO - ✓ COMPANY_E analyzed in 0.000s - Score: 77.5
+2025-09-16 01:16:24,719 - INFO - ✓ COMPANY_G analyzed in 0.000s - Score: 60.5
+2025-09-16 01:16:24,719 - INFO - ✓ COMPANY_H analyzed in 0.000s - Score: 50.5
+2025-09-16 01:16:24,719 - INFO - ✓ COMPANY_I analyzed in 0.000s - Score: 78.8
+2025-09-16 01:16:24,720 - INFO - ✓ COMPANY_J analyzed in 0.000s - Score: 73.5
+2025-09-16 01:16:24,720 - INFO - ✓ COMPANY_K analyzed in 0.000s - Score: 60.5
+2025-09-16 01:16:24,721 - INFO - ✓ COMPANY_L analyzed in 0.000s - Score: 51.8
+2025-09-16 01:16:24,722 - INFO - ✓ TCS analyzed in 0.000s - Score: 78.8
+2025-09-16 01:16:24,722 - INFO - ✓ HDFCBANK analyzed in 0.000s - Score: 73.5
+2025-09-16 01:16:24,723 - INFO - ✓ INFY analyzed in 0.000s - Score: 73.5
+2025-09-16 01:16:24,725 - INFO - Batch analysis completed in 0.01s - Success: 15/15
