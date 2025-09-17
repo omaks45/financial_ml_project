@@ -349,7 +349,7 @@ class PerformanceProfiler:
     """Context manager for profiling code sections"""
     
     def __init__(self, monitor: PerformanceMonitor, stage_name: str, 
-                 company_id: str = None):
+                company_id: str = None):
         self.monitor = monitor
         self.stage_name = stage_name
         self.company_id = company_id
